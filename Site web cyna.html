@@ -1,0 +1,63 @@
+Toute tentative non autorisée est enregistrée et surveillée<br>
+    ©️ 2025 CYNA Security — Tous droits réservés
+  </p>
+</div>
+<script>
+var attempts = 0;
+var maxAttempts = 3;
+
+function login() {
+  var u = document.getElementById('username').value;
+  var p = document.getElementById('password').value;
+
+  document.getElementById('alert-error').style.display = 'none';
+  document.getElementById('alert-warning').style.display = 'none';
+  document.getElementById('alert-success').style.display = 'none';
+
+  if (!u || !p) {
+    document.getElementById('alert-error').style.display = 'block';
+    return;
+  }
+
+  if (u === 'admin' && p === 'cyna2025') {
+    document.getElementById('alert-success').style.display = 'block';
+    attempts = 0;
+    return;
+  }
+
+  attempts++;
+  var remaining = maxAttempts - attempts;
+
+  if (attempts >= maxAttempts) {
+    document.getElementById('alert-blocked').style.display = 'block';
+    document.getElementById('btn-login').disabled = true;
+    document.getElementById('username').disabled = true;
+    document.getElementById('password').disabled = true;
+    document.getElementById('attempts-text').style.display = 'none';
+    document.getElementById('alert-error').style.display = 'none';
+    document.getElementById('alert-warning').style.display = 'none';
+    logToWazuh(u);
+  } else {
+    document.getElementById('alert-error').style.display = 'block';
+    document.getElementById('alert-warning').style.display = 'block';
+    document.getElementById('remaining').textContent = remaining;
+    document.getElementById('attempts-text').style.display = 'block';
+    document.getElementById('attempts-text').textContent = attempts + '/' + maxAttempts + ' tentatives échouées';
+  }
+}
+
+function logToWazuh(username) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/cyna-auth.log', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify({
+    event: 'BRUTE_FORCE_DETECTED',
+    username: username,
+    attempts: attempts,
+    timestamp: new Date().toISOString(),
+    ip: 'client'
+  }));
+}
+</script>
+</body>
+</html>
