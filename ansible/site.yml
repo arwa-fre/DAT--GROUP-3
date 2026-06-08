@@ -1,0 +1,13 @@
+- name: Configuration automatique CYNA
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Mise à jour des paquets
+      apt:
+        update_cache: yes
+
+    - name: Installation de nginx
+      apt:
+        name: nginx
+        state: present
